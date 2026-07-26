@@ -4,9 +4,13 @@ namespace App\Http\Controllers\Driver;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\Customer;
+use App\Models\Restaurant;
+use App\Models\OrderItem;
 use App\Services\FictitiousOrderDetector;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Arr;
 
 class DashboardController extends Controller
 {
@@ -87,6 +91,10 @@ class DashboardController extends Controller
 
         $driver->update(['is_online' => !$driver->is_online]);
 
+        if ($driver->is_online) {
+            $this->generateDummyOrders();
+        }
+
         $status = $driver->is_online ? 'Aktif Menerima Order' : 'Tidak Aktif';
         return back()->with('success', "Status berubah menjadi: $status");
     }
@@ -113,5 +121,92 @@ class DashboardController extends Controller
         ]);
 
         return back()->with('success', 'Pengajuan banding Anda telah dikirim dan sedang menunggu konfirmasi dari Admin.');
+    }
+
+    private function generateDummyOrders()
+    {
+        $customers = Customer::all();
+        $restaurants = Restaurant::all();
+
+        if ($customers->isEmpty() || $restaurants->isEmpty()) {
+            return;
+        }
+
+        $foodMenu = [
+            ['name' => 'Ayam Geprek Bensu', 'price' => 20000],
+            ['name' => 'Burger Beef Special', 'price' => 25000],
+            ['name' => 'Nasi Goreng Gila', 'price' => 22000],
+            ['name' => 'Sate Taichan 10 Tusuk', 'price' => 25000],
+            ['name' => 'Kopi Kenangan Mantan', 'price' => 18000],
+            ['name' => 'Mie Ayam Jamur', 'price' => 17000],
+            ['name' => 'Es Teh Manis Jumbo', 'price' => 5000],
+            ['name' => 'Kentang Goreng L', 'price' => 15000],
+            ['name' => 'Roti Bakar Coklat Keju', 'price' => 16000],
+            ['name' => 'Juice Alpukat', 'price' => 12000],
+        ];
+
+        $detector = new FictitiousOrderDetector();
+        $count = rand(5, 6);
+
+        for ($i = 0; $i < $count; $i++) {
+            $restaurant = $restaurants->random();
+
+            $latOffset = (rand(-1500, 1500) / 1000000);
+            $lngOffset = (rand(-1500, 1500) / 1000000);
+            
+            $deliveryLat = -6.8770 + $latOffset;
+            $deliveryLng = 107.5870 + $lngOffset;
+
+            // Randomly create a suspicious order scenario
+            $isSuspiciousScenario = ($i === 0 && rand(1, 10) > 4); 
+            
+            if ($isSuspiciousScenario) {
+                // Pick a customer with high cancel count if available to increase suspicion score
+                $suspiciousCustomer = Customer::where('cancel_count', '>', 3)->inRandomOrder()->first();
+                $customer = $suspiciousCustomer ?: $customers->random();
+                $address = 'kosong'; // Triggers length < 10 (+30 points) and keyword check (+20 points)
+            } else {
+                $customer = $customers->random();
+                $address = 'Jl. Sariasih No. ' . rand(1, 150) . ', RT 0' . rand(1,9) . '/RW 0' . rand(1,9) . ', Sarijadi, Bandung';
+            }
+
+            $itemCount = rand(1, 3);
+            $selectedItems = array_values(Arr::random($foodMenu, $itemCount));
+
+            $subtotal = 0;
+            foreach ($selectedItems as &$item) {
+                $item['qty'] = rand(1, 2);
+                $subtotal += $item['price'] * $item['qty'];
+            }
+
+            $deliveryFee = rand(8000, 15000);
+
+            $order = Order::create([
+                'order_code'       => Order::generateCode(),
+                'customer_id'      => $customer->id,
+                'restaurant_id'    => $restaurant->id,
+                'driver_id'        => null,
+                'delivery_address' => $address,
+                'delivery_lat'     => $deliveryLat,
+                'delivery_lng'     => $deliveryLng,
+                'subtotal'         => $subtotal,
+                'delivery_fee'     => $deliveryFee,
+                'total_amount'     => $subtotal + $deliveryFee,
+                'status'           => 'available',
+                'notes'            => null,
+            ]);
+
+            foreach ($selectedItems as $item) {
+                OrderItem::create([
+                    'order_id'  => $order->id,
+                    'item_name' => $item['name'],
+                    'quantity'  => $item['qty'],
+                    'price'     => $item['price'],
+                    'subtotal'  => $item['price'] * $item['qty'],
+                ]);
+            }
+
+            $detector->analyze($order);
+        }
     }
 }
