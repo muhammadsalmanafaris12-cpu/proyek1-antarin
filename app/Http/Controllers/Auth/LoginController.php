@@ -96,7 +96,6 @@ class LoginController extends Controller
     {
         $allowedAreas = [
             'Sukasari','Sukajadi','Cidadap','Coblong',
-            'Cicendo','Andir','Sumur Bandung','Bandung Wetan',
         ];
 
         $request->validate([

@@ -97,20 +97,10 @@
                 <i class="fas fa-map-location-dot icon"></i>
                 <select name="operational_area" class="form-control" style="padding-left:40px; height:44px;" required>
                     <option value="" disabled selected>-- Pilih Kecamatan --</option>
-                    <optgroup label="Bandung Utara">
-                        <option value="Sukasari"          {{ old('operational_area')==='Sukasari'          ? 'selected' : '' }}>Sukasari</option>
-                        <option value="Sukajadi"          {{ old('operational_area')==='Sukajadi'          ? 'selected' : '' }}>Sukajadi</option>
-                        <option value="Cidadap"           {{ old('operational_area')==='Cidadap'           ? 'selected' : '' }}>Cidadap</option>
-                        <option value="Coblong"           {{ old('operational_area')==='Coblong'           ? 'selected' : '' }}>Coblong</option>
-                    </optgroup>
-                    <optgroup label="Bandung Barat">
-                        <option value="Cicendo"           {{ old('operational_area')==='Cicendo'           ? 'selected' : '' }}>Cicendo</option>
-                        <option value="Andir"             {{ old('operational_area')==='Andir'             ? 'selected' : '' }}>Andir</option>
-                    </optgroup>
-                    <optgroup label="Bandung Tengah">
-                        <option value="Sumur Bandung"     {{ old('operational_area')==='Sumur Bandung'     ? 'selected' : '' }}>Sumur Bandung</option>
-                        <option value="Bandung Wetan"     {{ old('operational_area')==='Bandung Wetan'     ? 'selected' : '' }}>Bandung Wetan</option>
-                    </optgroup>
+                    <option value="Sukasari"          {{ old('operational_area')==='Sukasari'          ? 'selected' : '' }}>Sukasari</option>
+                    <option value="Sukajadi"          {{ old('operational_area')==='Sukajadi'          ? 'selected' : '' }}>Sukajadi</option>
+                    <option value="Cidadap"           {{ old('operational_area')==='Cidadap'           ? 'selected' : '' }}>Cidadap</option>
+                    <option value="Coblong"           {{ old('operational_area')==='Coblong'           ? 'selected' : '' }}>Coblong</option>
                 </select>
             </div>
             <p style="font-size:11px;color:#6b7280;margin-top:5px;padding-left:4px;">

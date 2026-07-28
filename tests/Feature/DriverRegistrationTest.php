@@ -161,7 +161,7 @@ class DriverRegistrationTest extends TestCase
             'email'    => 'janedoe@example.com',
             'password' => 'password123',
         ]);
-        $loginResponse->assertSessionHasErrors(['email' => 'Akun ditolak oleh admin.']);
+        $loginResponse->assertSessionHasErrors(['email' => 'Pendaftaran Anda ditolak oleh admin.']);
         $this->assertGuest();
     }
 }
